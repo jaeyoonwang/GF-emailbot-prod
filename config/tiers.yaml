@@ -1,0 +1,112 @@
+# Tier configuration for email priority assignment.
+#
+# Tier 1 (VVIP): Response expected within 30 minutes.
+# Tier 2 (Important): Response expected within the day.
+# Tier 3 (Standard): Response expected within the week.
+# Tier 4 (Default): Anyone not in tiers 1-3.
+#
+# All matching is by email address (case-insensitive, exact match).
+# Names are included as comments for human readability only.
+#
+# To add someone: add their email under the appropriate tier.
+# To change someone's tier: move them to the new tier section.
+# After editing: restart the service (`make deploy-staging` or `make deploy-prod`).
+
+tier_1:
+  emails:
+    - "Bill.Gates2@gatesfoundation.org"              # Bill Gates
+    - "minh@pendingspark.com"                        # Minh Dong
+    - "greg.martinez@gatesventures.com"              # Greg Martinez
+    - "larry.cohen@gatesventures.com"                # Larry Cohen
+    - "mark.suzman@gatesfoundation.org"              # Mark Suzman
+    - "niranjan.bose@gatesventures.com"              # Niranjan Bose
+
+tier_2:
+  emails:
+    # Gates Foundation staff
+    - "cara.carrubba@gatesfoundation.org"            # Cara Carrubba
+    - "chris.karp@gatesfoundation.org"               # Chris Karp
+    - "cynthia.mwase@gatesfoundation.org"            # Cynthia Mwase
+    - "dan.hartman@gatesfoundation.org"              # Dan Hartman
+    - "dan.wattendorf@gatesfoundation.org"           # Dan Wattendorf
+    - "gagandeep.kang@gatesfoundation.org"           # Gagandeep Kang
+    - "harish.iyer@gatesfoundation.org"              # Harish Iyer
+    - "jennifer.weisman@gatesfoundation.org"         # Jennifer Weisman
+    - "katey.owen@gatesfoundation.org"               # Katey Owen
+    - "keith.klugman@gatesfoundation.org"            # Keith Klugman
+    - "ken.miller@gatesfoundation.org"               # Ken Miller
+    - "nina.russell@gatesfoundation.org"             # Nina Russell
+    - "philip.welkhoff@gatesfoundation.org"          # Philip Welkhoff
+    - "radhika.ragsdale@gatesfoundation.org"         # Radhika Ragsdale
+    - "rasa.izadnegahdar@gatesfoundation.org"        # Rasa Izadnegahdar
+    - "toni.hoover@gatesfoundation.org"              # Toni Hoover
+    - "tracia.luh@gatesfoundation.org"               # Tracia Luh
+    - "yogan.pillay@gatesfoundation.org"             # Yogan Pillay
+    - "casey.selwyn@gatesfoundation.org"             # Casey Selwyn
+    - "chelsea.williams@gatesfoundation.org"         # Chelsea Williams
+    - "john.spangler@gatesfoundation.org"            # John Spangler
+    - "lindsey.walker@gatesfoundation.org"           # Lindsey Walker
+    - "shauna.barlow@gatesfoundation.org"            # Shauna Barlow
+    - "shreya.shirude@gatesfoundation.org"           # Shreya Shirude
+    - "lauren.bright@gatesfoundation.org"            # Lauren Bright
+    - "ankur.vora@gatesfoundation.org"               # Ankur Vora
+    - "shana.tarbell@gatesfoundation.org"            # Shana Tarbell
+    - "allan.golston@gatesfoundation.org"            # Allan Golston
+    - "carolyn.ainslie@gatesfoundation.org"          # Carolyn Ainslie
+    - "gargee.ghosh@gatesfoundation.org"             # Gargee Ghosh
+    - "anita.zaidi@gatesfoundation.org"              # Anita Zaidi
+    - "alex.reid@gatesfoundation.org"                # Alex Reid
+    - "hari.menon@gatesfoundation.org"               # Hari Menon
+    - "becky.frank@gatesfoundation.org"              # Becky Frank
+    - "chris.elias@gatesfoundation.org"              # Chris Elias
+    - "zameer.brey@gatesfoundation.org"              # Zameer Brey
+    - "hao.hu@gatesfoundation.org"                   # Hao Hu
+    - "skip.virgin@gatesfoundation.org"              # Skip Virgin
+    - "mike.mccune@gatesfoundation.org"              # Mike McCune
+    - "paulin.basinga@gatesfoundation.org"           # Paulin Basinga
+    - "patrice.machaba@gatesfoundation.org"          # Patrice Machaba
+    - "gillian.hansen@gatesfoundation.org"           # Gillian Hansen
+    - "priscilla.afriyie@gatesfoundation.org"        # Priscilla Afriyie
+    - "jeff.chertack@gatesfoundation.org"            # Jeff Chertack
+    - "krish.ramanathan@gatesfoundation.org"         # Krish Ramanathan
+    # External contacts
+    - "john.bell@populationhp.com"                   # Sir John Bell
+    - "cjlm@uw.edu"                                 # Christopher Murray
+    - "vijay.mital@gmail.com"                        # Vijay Mital
+    - "piot76@gmail.com"                             # Peter Piot
+    - "peter.piot@lshtm.ac.uk"                       # Peter Piot (LSHTM)
+    - "ja.rottingen@wellcome.org"                    # John-Arne Rottingen
+    - "subhash@inventprise.com"                      # Subhash Kapre
+    - "ek@anthropic.com"                             # Elizabeth Kelly
+
+tier_3:
+  emails:
+    # Gates Foundation staff
+    - "ashley.farley@gatesfoundation.org"            # Ashley Farley
+    - "fabi.prechtel@gatesfoundation.org"            # Fabi Prechtel
+    - "pamela.wilkins@gatesfoundation.org"           # Pamela Wilkins
+    - "saira.ahmed@gatesfoundation.org"              # Saira Ahmed
+    - "sarah.hartman@gatesfoundation.org"            # Sarah Hartman
+    - "melissa.anderson@gatesfoundation.org"         # Melissa Anderson
+    # External contacts
+    - "andy.lee@merck.com"                           # Andy Lee
+    - "tariro.makadzange@acrnhealth.com"             # Tariro Makadzange
+    - "sindurabg@gmail.com"                          # Sindura Ganapathi
+    - "lborio@archventure.com"                       # Luciana Borio
+    - "prof.neuro@gmail.com"                         # Gregory Moore
+    - "natalie@openai.com"                           # Natalie Summers
+    - "jessm@openai.com"                             # Jess Manzano
+    - "agus.ea@eitm.org"                             # Dr Agus
+    - "alistair.grenfell@iqvia.com"                  # Alistair Grenfell
+    - "rachel@globalcenter.ai"                       # Rachel Adams
+    - "chebet@gmail.com"                             # Juliana Rotich
+    - "mc@kera.health"                               # Moustapha Cisse
+    - "hrees@wrhi.ac.za"                             # Helen Reese
+    - "gregoryjnelson@hotmail.com"                   # Greg Nelson
+
+# Senders that are always filtered out (never shown to the user).
+# These are automated/system senders with no actionable content.
+filtered_senders:
+  - "no-reply@teams.mail.microsoft"
+  - "noreply@teams.mail.microsoft"
+  - "no-reply@microsoft.com"

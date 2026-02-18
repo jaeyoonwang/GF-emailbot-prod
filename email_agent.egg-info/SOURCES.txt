@@ -1,0 +1,11 @@
+pyproject.toml
+app/__init__.py
+app/config.py
+email_agent.egg-info/PKG-INFO
+email_agent.egg-info/SOURCES.txt
+email_agent.egg-info/dependency_links.txt
+email_agent.egg-info/requires.txt
+email_agent.egg-info/top_level.txt
+tests/test_filters.py
+tests/test_logging.py
+tests/test_priority.py
