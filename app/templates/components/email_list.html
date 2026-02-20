@@ -1,0 +1,101 @@
+<!-- Filter summary -->
+{% if filter_summary %}
+<div class="mb-4 bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex items-center justify-between text-sm">
+    <div class="flex items-center space-x-4">
+        <span class="text-gray-700 font-medium">{{ filter_summary.total_in_window }} emails in window</span>
+        <span class="text-gray-400">→</span>
+        <span class="text-blue-700 font-medium">{{ filter_summary.actionable }} need attention</span>
+    </div>
+    <div class="flex items-center space-x-3 text-gray-400 text-xs">
+        {% if filter_summary.calendar_invites > 0 %}
+        <span>📅 {{ filter_summary.calendar_invites }} calendar</span>
+        {% endif %}
+        {% if filter_summary.blocked_senders > 0 %}
+        <span>🚫 {{ filter_summary.blocked_senders }} blocked</span>
+        {% endif %}
+        {% if filter_summary.already_responded > 0 %}
+        <span>✅ {{ filter_summary.already_responded }} responded</span>
+        {% endif %}
+        {% if filter_summary.already_read > 0 %}
+        <span>👁 {{ filter_summary.already_read }} read</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Email cards -->
+{% if emails %}
+<div class="space-y-3">
+    {% for email in emails %}
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 tier-{{ email.tier }} hover:shadow-md transition fade-in"
+         style="animation-delay: {{ loop.index0 * 50 }}ms">
+        <div class="p-4">
+            <div class="flex items-start justify-between">
+                <!-- Left: tier badge + sender + subject -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="px-2 py-0.5 rounded text-xs font-semibold tier-badge-{{ email.tier }}">
+                            T{{ email.tier }}
+                        </span>
+                        <span class="text-sm font-medium text-gray-900 truncate">{{ email.sender_name }}</span>
+                        <span class="text-xs text-gray-400">{{ email.sender_email }}</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-gray-800 mb-1">{{ email.subject }}</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">{{ email.summary or email.body_preview[:200] }}</p>
+                    <div class="flex items-center space-x-3 mt-2 text-xs text-gray-400">
+                        <span>{{ email.received_datetime[:16].replace('T', ' ') }}</span>
+                        {% if email.has_attachments %}
+                        <span>📎 Attachments</span>
+                        {% endif %}
+                        {% if email.importance == 'high' %}
+                        <span class="text-red-500 font-medium">❗ High importance</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Right: action buttons -->
+                <div class="flex flex-col space-y-2 ml-4 flex-shrink-0">
+                    <button
+                        hx-get="/pages/email-inline/{{ email.id }}"
+                        hx-target="#email-detail-{{ loop.index0 }}"
+                        hx-indicator="#view-spinner-{{ loop.index0 }}"
+                        class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition text-center flex items-center space-x-1"
+                    >
+                        <span>View Full Email</span>
+                        <div id="view-spinner-{{ loop.index0 }}" class="spinner htmx-indicator" style="width:12px;height:12px;border-width:2px;"></div>
+                    </button>
+                    <button
+                        hx-post="/pages/draft/{{ email.id }}"
+                        hx-target="#draft-panel-{{ loop.index0 }}"
+                        hx-indicator="#draft-spinner-{{ loop.index0 }}"
+                        class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition flex items-center justify-center space-x-1"
+                    >
+                        <span>Generate Response</span>
+                        <div id="draft-spinner-{{ loop.index0 }}" class="spinner htmx-indicator" style="width:14px;height:14px;border-width:2px;"></div>
+                    </button>
+                    <button
+                        hx-post="/pages/mark-read/{{ email.id }}"
+                        hx-target="closest div.bg-white"
+                        hx-swap="outerHTML"
+                        class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-center"
+                    >
+                        ✅ Mark Read
+                    </button>
+                </div>
+            </div>
+
+            <!-- Draft panel (loads here when "Generate Response" is clicked) -->
+            <div id="draft-panel-{{ loop.index0 }}"></div>
+
+            <!-- Email detail (loads here when "View Full Email" is clicked) -->
+            <div id="email-detail-{{ loop.index0 }}"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center fade-in">
+    <p class="text-gray-500 text-lg">No emails need attention right now.</p>
+    <p class="text-gray-400 text-sm mt-2">Try expanding the time window or check back later.</p>
+</div>
+{% endif %}

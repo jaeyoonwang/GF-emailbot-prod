@@ -24,7 +24,8 @@ Usage:
 """
 
 import logging
-from typing import Optional, Protocol
+from typing import Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.agent.schemas import Email, FilterResult, Tier, DraftResponse, SentEmail
 from app.agent.priority import TierConfig
@@ -92,24 +93,24 @@ class AgentEngine:
 
     def process_inbox(self, emails: list[Email]) -> tuple[list[Email], list[ProcessedEmail]]:
         """
-        Process a batch of emails: filter, assign tiers, and summarize.
+        Process a batch of emails: filter and assign tiers.
 
-        Summarization happens for all actionable emails so Trevor can scan
-        the inbox immediately. Draft generation remains on-demand.
+        Does NOT summarize — call summarize_batch() separately after
+        any additional filtering (e.g., tier-based read/responded checks).
+        This avoids wasting API calls on emails that get filtered out later.
 
         Args:
             emails: Raw emails from Graph API.
 
         Returns:
             Tuple of (actionable_emails, filtered_emails).
-            actionable_emails: Emails with tier + summary, sorted by tier (highest priority first).
-            filtered_emails: ProcessedEmail objects for emails that were filtered out.
+            actionable_emails: Emails with tier assigned, sorted by tier.
+            filtered_emails: ProcessedEmail objects for filtered emails.
         """
         actionable = []
         filtered = []
 
         for email in emails:
-            # Run filters
             filter_result = check_filters(email, self._tiers)
 
             if filter_result.filtered:
@@ -123,7 +124,6 @@ class AgentEngine:
                 )
                 continue
 
-            # Assign tier
             email.tier = self._tiers.get_tier(email.sender_email)
 
             actionable.append(email)
@@ -136,24 +136,41 @@ class AgentEngine:
                 },
             )
 
-        # Sort by tier (VVIP first)
         actionable.sort(key=lambda e: e.tier)
 
-        # Summarize all actionable emails
-        for email in actionable:
-            self.summarize_email(email)
-
         audit.info(
-            "inbox.processed",
+            "inbox.classified",
             extra={
                 "total_emails": len(emails),
                 "actionable_count": len(actionable),
                 "filtered_count": len(filtered),
-                "summarized_count": len(actionable),
             },
         )
 
         return actionable, filtered
+
+    def summarize_batch(self, emails: list[Email]) -> None:
+        """
+        Summarize a list of emails in parallel.
+
+        Call this AFTER all filtering is complete, so we only spend
+        API calls on emails that will actually be shown to the user.
+        """
+        if not emails:
+            return
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {
+                executor.submit(self.summarize_email, email): email
+                for email in emails
+            }
+            for future in as_completed(futures):
+                future.result()
+
+        audit.info(
+            "inbox.summarized",
+            extra={"summarized_count": len(emails)},
+        )
 
     # =========================================================================
     # SUMMARIZATION — On-demand, one email at a time

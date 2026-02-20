@@ -55,8 +55,11 @@ class Settings(BaseSettings):
             "https://graph.microsoft.com/Mail.Read",
             "https://graph.microsoft.com/Mail.Send",
             "https://graph.microsoft.com/Mail.ReadWrite",
-            "https://graph.microsoft.com/User.Read",
         ],
+        description=(
+            "Microsoft Graph API scopes. Only include Graph resource scopes here. "
+            "MSAL automatically requests openid, profile, and offline_access."
+        ),
     )
 
     model_config = {

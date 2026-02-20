@@ -69,7 +69,7 @@ def is_calendar_invite(email: Email) -> bool:
         return True
 
     # Body content patterns
-    combined_body = f"{email.body} {email.body_preview}".lower()
+    combined_body = f"{email.body} {email.body_preview} {email.body_html}".lower()
     if any(p in combined_body for p in CALENDAR_BODY_PATTERNS):
         return True
 

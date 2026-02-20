@@ -72,3 +72,5 @@ def setup_logging(level: str = "info") -> None:
     logging.getLogger("httpcore").setLevel(logging.WARNING)
     logging.getLogger("msal").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("anthropic").setLevel(logging.WARNING)

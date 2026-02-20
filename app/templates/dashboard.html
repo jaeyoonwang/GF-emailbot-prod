@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Email Agent{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ greeting }}, {{ user_name.split(' ')[0] if user_name else 'there' }}!</h1>
+        <p class="text-sm text-gray-500 mt-1">Your prioritized inbox</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <!-- Time window selector -->
+        <select id="time-window" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="6 hours" {% if time_window == '6 hours' %}selected{% endif %}>Past 6 hours</option>
+            <option value="12 hours" {% if time_window == '12 hours' %}selected{% endif %}>Past 12 hours</option>
+            <option value="24 hours" {% if time_window == '24 hours' %}selected{% endif %}>Past 24 hours</option>
+            <option value="48 hours" {% if time_window == '48 hours' %}selected{% endif %}>Past 48 hours</option>
+        </select>
+        <!-- Fetch button -->
+        <button
+            id="fetch-btn"
+            hx-get="/pages/inbox-content"
+            hx-include="#time-window"
+            hx-target="#inbox-content"
+            hx-vals='js:{"time_window": document.getElementById("time-window").value}'
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition flex items-center space-x-2"
+        >
+            <span id="fetch-btn-text">Fetch Emails</span>
+            <div id="fetch-spinner" class="spinner htmx-indicator"></div>
+        </button>
+    </div>
+</div>
+
+<!-- Loading overlay (shown during fetch) -->
+<div id="loading-overlay" class="hidden mb-4">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center space-x-3">
+        <div class="spinner" style="border-top-color: #3b82f6;"></div>
+        <div>
+            <p class="text-blue-800 font-medium text-sm">Loading your inbox...</p>
+            <p class="text-blue-600 text-xs mt-1">Fetching emails, filtering, prioritizing, and generating AI summaries. This may take 10-15 seconds.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide loading overlay during HTMX requests
+    document.body.addEventListener('htmx:beforeRequest', function(event) {
+        if (event.detail.elt.id === 'fetch-btn') {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            document.getElementById('fetch-btn-text').textContent = 'Loading...';
+        }
+    });
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        if (event.detail.elt.id === 'fetch-btn') {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            document.getElementById('fetch-btn-text').textContent = 'Fetch Emails';
+        }
+    });
+</script>
+
+<!-- Filter summary bar -->
+<div id="filter-summary"></div>
+
+<!-- Email list -->
+<div id="inbox-content">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <p class="text-gray-500 text-lg">Click <strong>Fetch Emails</strong> to load your inbox.</p>
+        <p class="text-gray-400 text-sm mt-2">Emails will be prioritized, filtered, and summarized automatically.</p>
+    </div>
+</div>
+
+<!-- Priority guide -->
+<div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <p class="text-xs text-gray-500">
+        <strong>Priority Guide:</strong>
+        <span class="inline-block ml-2 px-2 py-0.5 rounded tier-badge-1 text-xs font-medium">Tier 1 — VVIP (30 min)</span>
+        <span class="inline-block ml-2 px-2 py-0.5 rounded tier-badge-2 text-xs font-medium">Tier 2 — Important (same day)</span>
+        <span class="inline-block ml-2 px-2 py-0.5 rounded tier-badge-3 text-xs font-medium">Tier 3 — Standard (within week)</span>
+        <span class="inline-block ml-2 px-2 py-0.5 rounded tier-badge-4 text-xs font-medium">Tier 4 — Default</span>
+    </p>
+</div>
+{% endblock %}

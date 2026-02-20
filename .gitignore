@@ -40,3 +40,4 @@ htmlcov/
 *.key
 *.pem
 secrets/
+email_agent.egg-info/

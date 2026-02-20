@@ -1,0 +1,24 @@
+<!-- Inline email detail — expands within the email card -->
+<div class="mt-4 border-t border-gray-200 pt-4 fade-in">
+    <div class="flex items-center justify-between mb-3">
+        <h4 class="text-sm font-semibold text-gray-700">Full Email</h4>
+        <div class="flex items-center space-x-3 text-xs text-gray-400">
+            {% if email.has_attachments %}
+            <span>📎 Has attachments — open in Outlook to view</span>
+            {% endif %}
+            {% if email.web_link %}
+            <a href="{{ email.web_link }}" target="_blank" class="text-blue-500 hover:text-blue-700">Open in Outlook ↗</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if email.body_html %}
+    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 overflow-auto max-h-96 text-sm">
+        {{ email.body_html | safe }}
+    </div>
+    {% elif email.body %}
+    <div class="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed bg-gray-50 rounded-lg p-4 max-h-96 overflow-auto">{{ email.body }}</div>
+    {% else %}
+    <div class="text-sm text-gray-500 italic">No email body available.</div>
+    {% endif %}
+</div>

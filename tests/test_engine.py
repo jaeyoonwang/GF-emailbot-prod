@@ -141,29 +141,34 @@ class TestProcessInbox:
         tiers = [e.tier for e in actionable]
         assert tiers == [Tier.VVIP, Tier.IMPORTANT, Tier.STANDARD, Tier.DEFAULT]
 
-    def test_summarizes_all_actionable_emails(self, engine, mock_llm):
-        """process_inbox should summarize all emails that pass filters."""
-        emails = [
-            make_email(id=f"e{i}", sender_email="person@example.com")
-            for i in range(5)
-        ]
-        actionable, _ = engine.process_inbox(emails)
+    def test_does_not_summarize_during_process(self, engine, mock_llm):
+        """process_inbox should NOT call the LLM — summarization is separate."""
+        emails = [make_email(id=f"e{i}") for i in range(5)]
+        engine.process_inbox(emails)
+        mock_llm.complete.assert_not_called()
 
-        # LLM should be called once per actionable email for summarization
-        assert mock_llm.complete.call_count == 5
-        for email in actionable:
+    def test_summarize_batch(self, engine, mock_llm):
+        """summarize_batch should summarize all emails in the list."""
+        emails = [make_email(id=f"e{i}") for i in range(3)]
+        engine.summarize_batch(emails)
+        assert mock_llm.complete.call_count == 3
+        for email in emails:
             assert email.summary is not None
 
     def test_does_not_summarize_filtered_emails(self, engine, mock_llm):
-        """Filtered emails should not be summarized (saves API calls)."""
+        """Filtered emails should not be summarized."""
         emails = [
-            make_email(id="e1", sender_email="no-reply@teams.mail.microsoft"),  # filtered
-            make_email(id="e2", subject="Accepted: Standup"),                    # filtered
-            make_email(id="e3", sender_email="director@org.com"),                # passes
+            make_email(id="e1", sender_email="no-reply@teams.mail.microsoft"),
+            make_email(id="e2", subject="Accepted: Standup"),
+            make_email(id="e3", sender_email="director@org.com"),
         ]
         actionable, filtered = engine.process_inbox(emails)
 
-        # Only 1 actionable email should trigger an LLM call
+        # process_inbox doesn't summarize at all
+        assert mock_llm.complete.call_count == 0
+
+        # Summarize only actionable
+        engine.summarize_batch(actionable)
         assert mock_llm.complete.call_count == 1
         assert len(filtered) == 2
 

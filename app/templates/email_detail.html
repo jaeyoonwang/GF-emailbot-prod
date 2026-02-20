@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ email.subject }} — Email Agent{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="/" class="text-blue-600 hover:text-blue-800 text-sm font-medium">← Back to Inbox</a>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <!-- Email header -->
+    <div class="border-b border-gray-200 pb-4 mb-4">
+        <h1 class="text-xl font-bold text-gray-900 mb-2">{{ email.subject }}</h1>
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                <span class="font-medium">From:</span> {{ email.sender_name }}
+                <span class="text-gray-400">({{ email.sender_email }})</span>
+            </div>
+            <div class="flex items-center space-x-3 text-sm text-gray-400">
+                <span>{{ email.received_datetime[:16].replace('T', ' ') }}</span>
+                {% if email.has_attachments %}
+                <span>📎 Has attachments</span>
+                {% endif %}
+                {% if email.web_link %}
+                <a href="{{ email.web_link }}" target="_blank" class="text-blue-500 hover:text-blue-700">Open in Outlook</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Email body -->
+    <div class="prose max-w-none mb-6">
+        {% if email.body_html %}
+        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 overflow-auto max-h-96">
+            {{ email.body_html | safe }}
+        </div>
+        {% else %}
+        <div class="whitespace-pre-wrap text-gray-800 leading-relaxed">{{ email.body or email.body_preview }}</div>
+        {% endif %}
+    </div>
+
+    {% if email.has_attachments %}
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6 text-sm text-yellow-800">
+        📎 This email has attachments. Open in Outlook to view or download them.
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="border-t border-gray-200 pt-4">
+        <div class="flex items-center space-x-3 mb-4">
+            <button
+                hx-post="/pages/draft/{{ email.id }}"
+                hx-target="#detail-draft-panel"
+                hx-indicator="#detail-draft-spinner"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition flex items-center space-x-2"
+            >
+                <span>Generate Response</span>
+                <div id="detail-draft-spinner" class="spinner htmx-indicator" style="width:14px;height:14px;border-width:2px;"></div>
+            </button>
+            <button
+                hx-post="/pages/mark-read/{{ email.id }}"
+                hx-swap="none"
+                class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                onclick="this.textContent='✅ Marked'; this.disabled=true;"
+            >
+                ✅ Mark as Read
+            </button>
+        </div>
+
+        <!-- Draft panel loads here -->
+        <div id="detail-draft-panel"></div>
+    </div>
+</div>
+{% endblock %}

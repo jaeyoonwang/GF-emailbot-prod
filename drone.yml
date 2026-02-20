@@ -1,0 +1,168 @@
+kind: pipeline
+name: Test Build
+
+steps:
+  - name: docker dry_run
+    image: plugins/docker
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: DOCKER_PASSWORD
+    settings:
+      dry_run: true
+      registry: bmgfsre.azurecr.io
+      repo: bmgfsre.azurecr.io/${DRONE_REPO_NAME,,}
+      username: drone-push
+      password:
+        from_secret: DOCKER_PASSWORD
+      tags:
+        - "${DRONE_BUILD_NUMBER}"
+        - "latest"
+
+trigger:
+  branch:
+    - main
+  event:
+    - pull_request
+
+image_pull_secrets:
+  - dockerhubcreds
+
+---
+kind: pipeline
+name: Build and Deploy to Acc
+
+steps:
+  - name: docker build and upload
+    image: plugins/docker
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: DOCKER_PASSWORD
+    settings:
+      registry: bmgfsre.azurecr.io
+      repo: bmgfsre.azurecr.io/${DRONE_REPO_NAME,,}
+      username: drone-push
+      password:
+        from_secret: DOCKER_PASSWORD
+      tags:
+        - "${DRONE_BUILD_NUMBER}"
+        - "latest"
+
+  - name: Deploy to Nomad (acc)
+    image: gatesfoundation/nomad-client:latest
+    environment:
+      NOMAD_ADDR: https://aws-nomad.bmgf.io
+      NOMAD_REGION: us-west-2
+      NOMAD_TOKEN:
+        from_secret: AWS_NOMAD_TOKEN
+      NOMAD_VAR_domain_acc:
+        from_secret: NOMAD_VAR_domain_acc_aws
+      NOMAD_VAR_azure_client_id:
+        from_secret: AZURE_CLIENT_ID
+      NOMAD_VAR_azure_client_secret:
+        from_secret: AZURE_CLIENT_SECRET
+      NOMAD_VAR_azure_tenant_id:
+        from_secret: AZURE_TENANT_ID
+      NOMAD_VAR_anthropic_api_key:
+        from_secret: ANTHROPIC_API_KEY
+      NOMAD_VAR_session_secret_key:
+        from_secret: SESSION_SECRET_KEY
+      NAMESPACE:
+        from_secret: NAMESPACE
+      PORT_NUMBER: 8000
+    commands:
+      - sed -i "s/__REPO__NAME__/${DRONE_REPO_NAME,,}/g" ./jobspec_acc.nomad
+      - sed -i "s/__BUILD__NUMBER__/$DRONE_BUILD_NUMBER/g" ./jobspec_acc.nomad
+      - sed -i "s/__NAMESPACE__/$NAMESPACE/g" ./jobspec_acc.nomad
+      - sed -i "s/__PORT__NUMBER__/$PORT_NUMBER/g" ./jobspec_acc.nomad
+      - nomad job run ./jobspec_acc.nomad
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+image_pull_secrets:
+  - dockerhubcreds
+
+---
+kind: pipeline
+name: Deploy to Acceptance
+
+steps:
+  - name: Deploy to Nomad (acc)
+    image: gatesfoundation/nomad-client:latest
+    environment:
+      NOMAD_ADDR: https://aws-nomad.bmgf.io
+      NOMAD_REGION: us-west-2
+      NOMAD_TOKEN:
+        from_secret: AWS_NOMAD_TOKEN
+      NOMAD_VAR_domain_acc:
+        from_secret: NOMAD_VAR_domain_acc_aws
+      NOMAD_VAR_azure_client_id:
+        from_secret: AZURE_CLIENT_ID
+      NOMAD_VAR_azure_client_secret:
+        from_secret: AZURE_CLIENT_SECRET
+      NOMAD_VAR_azure_tenant_id:
+        from_secret: AZURE_TENANT_ID
+      NOMAD_VAR_anthropic_api_key:
+        from_secret: ANTHROPIC_API_KEY
+      NOMAD_VAR_session_secret_key:
+        from_secret: SESSION_SECRET_KEY
+      NAMESPACE:
+        from_secret: NAMESPACE
+      PORT_NUMBER: 8000
+    commands:
+      - sed -i "s/__REPO__NAME__/${DRONE_REPO_NAME,,}/g" ./jobspec_acc.nomad
+      - sed -i "s/__BUILD__NUMBER__/$DRONE_BUILD_PARENT/g" ./jobspec_acc.nomad
+      - sed -i "s/__NAMESPACE__/$NAMESPACE/g" ./jobspec_acc.nomad
+      - sed -i "s/__PORT__NUMBER__/$PORT_NUMBER/g" ./jobspec_acc.nomad
+      - nomad job run ./jobspec_acc.nomad
+
+trigger:
+  target:
+    - acc
+
+image_pull_secrets:
+  - dockerhubcreds
+
+---
+kind: pipeline
+name: Deploy to Production
+
+steps:
+  - name: Deploy to Nomad
+    image: gatesfoundation/nomad-client:latest
+    environment:
+      NOMAD_ADDR: https://aws-nomad.bmgf.io
+      NOMAD_REGION: us-west-2
+      NOMAD_TOKEN:
+        from_secret: AWS_NOMAD_TOKEN
+      NOMAD_VAR_domain_prod:
+        from_secret: NOMAD_VAR_domain_prod_aws
+      NOMAD_VAR_azure_client_id:
+        from_secret: AZURE_CLIENT_ID
+      NOMAD_VAR_azure_client_secret:
+        from_secret: AZURE_CLIENT_SECRET
+      NOMAD_VAR_azure_tenant_id:
+        from_secret: AZURE_TENANT_ID
+      NOMAD_VAR_anthropic_api_key:
+        from_secret: ANTHROPIC_API_KEY
+      NOMAD_VAR_session_secret_key:
+        from_secret: SESSION_SECRET_KEY
+      NAMESPACE:
+        from_secret: NAMESPACE
+      PORT_NUMBER: 8000
+    commands:
+      - sed -i "s/__REPO__NAME__/${DRONE_REPO_NAME,,}/g" ./jobspec.nomad
+      - sed -i "s/__BUILD__NUMBER__/$DRONE_BUILD_PARENT/g" ./jobspec.nomad
+      - sed -i "s/__NAMESPACE__/$NAMESPACE/g" ./jobspec.nomad
+      - sed -i "s/__PORT__NUMBER__/$PORT_NUMBER/g" ./jobspec.nomad
+      - nomad job run ./jobspec.nomad
+
+trigger:
+  target:
+    - prod
+
+image_pull_secrets:
+  - dockerhubcreds
