@@ -96,7 +96,6 @@ job "__REPO__NAME__-acc" {
         image           = "bmgfsre.azurecr.io/__REPO__NAME__:__BUILD__NUMBER__"
         ports           = ["http"]
         readonly_rootfs = true
-        tmpfs           = ["/tmp:size=64m,noexec,nosuid"]
       }
 
       env {
