@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Claude Sonnet 4 pricing (per 1M tokens) — update if model changes
 PRICING = {
-    "claude-sonnet-4-20250514": {"input": 3.00, "output": 15.00},
+    "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
 }
 # Fallback pricing if model not in pricing table
 DEFAULT_PRICING = {"input": 3.00, "output": 15.00}

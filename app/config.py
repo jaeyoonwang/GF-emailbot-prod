@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     # --- Anthropic LLM ---
     anthropic_api_key: str = Field(description="Anthropic API key")
     anthropic_model: str = Field(
-        default="claude-sonnet-4-20250514",
+        default="claude-sonnet-4-6",
         description="Anthropic model to use",
     )
     anthropic_max_tokens_summary: int = Field(default=200)
