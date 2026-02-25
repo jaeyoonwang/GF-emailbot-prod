@@ -18,6 +18,7 @@ from app.auth.routes import router as auth_router
 from app.api.routes_email import router as email_router
 from app.api.routes_agent import router as agent_router
 from app.api.routes_pages import router as pages_router
+from app.api.routes_debug import router as debug_router  # TEMPORARY — remove after testing
 from app.auth.session import SESSION_COOKIE_NAME, get_session_from_request
 
 # --- Initialize logging FIRST ---
@@ -105,6 +106,7 @@ app.include_router(auth_router)
 app.include_router(pages_router)  # Pages first (has "/" route)
 app.include_router(email_router)
 app.include_router(agent_router)
+app.include_router(debug_router)  # TEMPORARY — remove after testing
 
 
 # --- Health check endpoints ---
