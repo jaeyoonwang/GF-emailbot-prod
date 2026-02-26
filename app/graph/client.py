@@ -233,9 +233,8 @@ class GraphClient:
 
         url: Optional[str] = f"{self._base}/me/mailFolders/sentItems/messages"
         pages_fetched = 0
-        max_pages = 5  # Safety limit: 5 pages × 50 = 250 emails scanned
 
-        while url and len(matched) < max_emails and pages_fetched < max_pages:
+        while url and len(matched) < max_emails:
             try:
                 if pages_fetched == 0:
                     resp = self._http.get(url, params=params)
@@ -308,9 +307,8 @@ class GraphClient:
 
         url: Optional[str] = f"{self._base}/me/mailFolders/sentItems/messages"
         pages_fetched = 0
-        max_pages = 2  # 2 pages × 50 = 100 emails max
 
-        while url and len(emails) < max_emails and pages_fetched < max_pages:
+        while url and len(emails) < max_emails:
             try:
                 if pages_fetched == 0:
                     resp = self._http.get(url, params=params)

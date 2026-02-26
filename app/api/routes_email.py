@@ -54,7 +54,7 @@ async def get_inbox(
     2. Filters out calendar invites and blocked senders
     3. Assigns priority tiers
     4. For Tier 1&2: checks if already responded (shows unresponded only)
-    5. For Tier 3&4: shows unread only
+    5. For Tier 3: shows unread only (Tier 4 excluded entirely)
     6. Summarizes all remaining emails
     7. Returns the sorted, summarized list
     """
@@ -74,7 +74,7 @@ async def get_inbox(
 
         # Tier-based response/read filtering
         tier_12 = [e for e in actionable if e.tier and e.tier.value <= 2]
-        tier_34 = [e for e in actionable if e.tier and e.tier.value > 2]
+        tier_3 = [e for e in actionable if e.tier and e.tier.value == 3]
 
         # Tier 1&2: filter out already-responded conversations
         responded_filtered = 0
@@ -90,18 +90,18 @@ async def get_inbox(
                         unresponded.append(email)
                 tier_12 = unresponded
 
-        # Tier 3&4: filter out already-read emails
+        # Tier 3: filter out already-read emails (Tier 4 excluded entirely)
         read_filtered = 0
-        unread_34 = []
-        for email in tier_34:
+        unread_3 = []
+        for email in tier_3:
             if email.is_read:
                 read_filtered += 1
             else:
-                unread_34.append(email)
-        tier_34 = unread_34
+                unread_3.append(email)
+        tier_3 = unread_3
 
         # Combine and sort
-        final_emails = tier_12 + tier_34
+        final_emails = tier_12 + tier_3
         final_emails.sort(key=lambda e: e.tier)
 
         # Build filter summary for the sidebar

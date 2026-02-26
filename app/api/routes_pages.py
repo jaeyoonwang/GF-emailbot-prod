@@ -146,7 +146,7 @@ async def inbox_content(
 
         # Step 3: Tier-based filtering
         tier_12 = [e for e in actionable if e.tier and e.tier.value <= 2]
-        tier_34 = [e for e in actionable if e.tier and e.tier.value > 2]
+        tier_3 = [e for e in actionable if e.tier and e.tier.value == 3]
 
         responded_filtered = 0
         if tier_12:
@@ -162,15 +162,15 @@ async def inbox_content(
                 tier_12 = unresponded
 
         read_filtered = 0
-        unread_34 = []
-        for email in tier_34:
+        unread_3 = []
+        for email in tier_3:
             if email.is_read:
                 read_filtered += 1
             else:
-                unread_34.append(email)
-        tier_34 = unread_34
+                unread_3.append(email)
+        tier_3 = unread_3
 
-        final_emails = tier_12 + tier_34
+        final_emails = tier_12 + tier_3
         final_emails.sort(key=lambda e: e.tier)
 
         # Step 4: Summarize ONLY the final list (parallel LLM calls)
