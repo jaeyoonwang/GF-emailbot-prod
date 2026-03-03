@@ -86,8 +86,6 @@ class TierConfig:
         email = sender_email.lower().strip()
         if email in self.filtered_senders:
             return True
-        if ("no-reply@" in email or "noreply@" in email) and (
-            "teams" in email or "microsoft" in email
-        ):
+        if "no-reply@" in email or "noreply@" in email:
             return True
         return False

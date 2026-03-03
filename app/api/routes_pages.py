@@ -170,6 +170,7 @@ async def inbox_content(
                 unread_3.append(email)
         tier_3 = unread_3
 
+        tier_4 = [e for e in actionable if e.tier and e.tier.value == 4]
         final_emails = tier_12 + tier_3
         final_emails.sort(key=lambda e: e.tier)
 
@@ -183,6 +184,7 @@ async def inbox_content(
             "blocked_senders": sum(1 for f in filtered if f.reason == "filtered_sender"),
             "already_responded": responded_filtered,
             "already_read": read_filtered,
+            "tier_4_count": len(tier_4),
         }
 
         email_dicts = []

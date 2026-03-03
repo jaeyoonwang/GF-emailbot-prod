@@ -19,6 +19,9 @@
         {% if filter_summary.already_read > 0 %}
         <span>👁 {{ filter_summary.already_read }} read</span>
         {% endif %}
+        {% if filter_summary.tier_4_count > 0 %}
+        <span>⬇ {{ filter_summary.tier_4_count }} default tier</span>
+        {% endif %}
     </div>
 </div>
 {% endif %}
