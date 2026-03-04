@@ -58,6 +58,13 @@ job "__REPO__NAME__" {
     # See documentation before increasing count.
     count = 1
 
+    restart {
+      attempts = 3
+      interval = "2m"
+      delay    = "10s"
+      mode     = "delay"
+    }
+
     network {
       port "http" { to = __PORT__NUMBER__ }
     }

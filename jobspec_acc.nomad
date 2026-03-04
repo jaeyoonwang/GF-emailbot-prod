@@ -55,6 +55,13 @@ job "__REPO__NAME__-acc" {
   group "__REPO__NAME__-acc" {
     count = 1
 
+    restart {
+      attempts = 3
+      interval = "2m"
+      delay    = "10s"
+      mode     = "delay"
+    }
+
     network {
       port "http" { to = __PORT__NUMBER__ }
     }
