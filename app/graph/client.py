@@ -206,7 +206,7 @@ class GraphClient:
     # =========================================================================
 
     def fetch_sent_to_recipient(
-        self, recipient_email: str, max_emails: int = 100
+        self, recipient_email: str, max_emails: int = 100, max_pages: int = 20
     ) -> list[dict]:
         """
         Fetch sent emails to a specific recipient for style context.
@@ -217,6 +217,8 @@ class GraphClient:
         Args:
             recipient_email: Email address of the recipient.
             max_emails: Maximum matching emails to return.
+            max_pages: Maximum pages to scan (caps total emails scanned at
+                       max_pages * 50). Prevents runaway scans on large mailboxes.
 
         Returns:
             List of dicts with 'subject', 'body', 'body_preview', 'sent_datetime'.
@@ -234,7 +236,7 @@ class GraphClient:
         url: Optional[str] = f"{self._base}/me/mailFolders/sentItems/messages"
         pages_fetched = 0
 
-        while url and len(matched) < max_emails:
+        while url and len(matched) < max_emails and pages_fetched < max_pages:
             try:
                 if pages_fetched == 0:
                     resp = self._http.get(url, params=params)
@@ -276,6 +278,14 @@ class GraphClient:
                     },
                 )
                 break
+
+        if pages_fetched >= max_pages and url:
+            audit.info(
+                "graph.sent_to_recipient.page_cap_hit",
+                recipient_domain=recipient_lower.split("@")[-1] if "@" in recipient_lower else "unknown",
+                pages=pages_fetched,
+                matched=len(matched),
+            )
 
         latency_ms = int((time.monotonic() - start) * 1000)
         audit.info(

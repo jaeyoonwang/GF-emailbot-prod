@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import httpx
 from fastapi import APIRouter, Depends, Request, Response, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -77,7 +78,7 @@ async def dashboard(
 
 
 @router.get("/pages/email/{email_id}", response_class=HTMLResponse)
-async def email_detail_page(
+def email_detail_page(
     email_id: str,
     request: Request,
     response: Response,
@@ -114,7 +115,7 @@ async def email_detail_page(
 # =========================================================================
 
 @router.get("/pages/inbox-content", response_class=HTMLResponse)
-async def inbox_content(
+def inbox_content(
     request: Request,
     response: Response,
     session: SessionData = Depends(require_auth),
@@ -226,7 +227,7 @@ async def inbox_content(
 
 
 @router.get("/pages/email-inline/{email_id}", response_class=HTMLResponse)
-async def email_inline_fragment(
+def email_inline_fragment(
     email_id: str,
     request: Request,
     response: Response,
@@ -259,7 +260,7 @@ async def email_inline_fragment(
 
 
 @router.post("/pages/draft/{email_id}", response_class=HTMLResponse)
-async def generate_draft_fragment(
+def generate_draft_fragment(
     email_id: str,
     request: Request,
     response: Response,
@@ -292,10 +293,27 @@ async def generate_draft_fragment(
             return HTMLResponse('<div class="text-red-600 text-sm mt-2">Cannot determine sender.</div>')
 
         # Fetch style context
-        sent_to_sender = graph.fetch_sent_to_recipient(sender_email, max_emails=100)
+        sender_domain = sender_email.split("@")[-1] if "@" in sender_email else "unknown"
+        audit.info(
+            "draft.fetching_style",
+            email_id=email_id,
+            sender_domain=sender_domain,
+        )
+
+        sent_to_sender = []
         all_sent = []
-        if not sent_to_sender:
-            all_sent = graph.fetch_recent_sent(max_emails=100)
+        try:
+            sent_to_sender = graph.fetch_sent_to_recipient(sender_email, max_emails=100)
+            if not sent_to_sender:
+                all_sent = graph.fetch_recent_sent(max_emails=100)
+        except httpx.TimeoutException:
+            audit.warning(
+                "draft.style_fetch_timeout",
+                email_id=email_id,
+                sender_domain=sender_domain,
+            )
+            # Continue with no style context — draft will be less personalized
+            # but the user gets a response instead of an error
 
         # Generate draft
         result = engine.draft_reply(
@@ -330,7 +348,7 @@ async def generate_draft_fragment(
 
 
 @router.post("/pages/mark-read/{email_id}", response_class=HTMLResponse)
-async def mark_read_fragment(
+def mark_read_fragment(
     email_id: str,
     request: Request,
     response: Response,

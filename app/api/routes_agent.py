@@ -8,6 +8,7 @@ These endpoints handle AI-powered operations:
 
 import logging
 
+import httpx
 from fastapi import APIRouter, Depends, Response, HTTPException
 
 from app.auth.dependencies import require_auth
@@ -36,7 +37,7 @@ def _get_engine() -> AgentEngine:
 
 
 @router.post("/draft")
-async def generate_draft(
+def generate_draft(
     request: DraftRequest,
     response: Response,
     session: SessionData = Depends(require_auth),
@@ -80,20 +81,30 @@ async def generate_draft(
             raise HTTPException(status_code=400, detail="Cannot determine sender email address")
 
         # Fetch style context: specific to sender first, then general fallback
+        sender_domain = sender_email.split("@")[-1] if "@" in sender_email else "unknown"
         audit.info(
             "draft.fetching_style",
             email_id=request.email_id,
-            sender_domain=sender_email.split("@")[-1] if "@" in sender_email else "unknown",
+            sender_domain=sender_domain,
         )
 
-        sent_to_sender = graph.fetch_sent_to_recipient(
-            recipient_email=sender_email,
-            max_emails=100,
-        )
-
+        sent_to_sender = []
         all_sent = []
-        if not sent_to_sender:
-            all_sent = graph.fetch_recent_sent(max_emails=100)
+        try:
+            sent_to_sender = graph.fetch_sent_to_recipient(
+                recipient_email=sender_email,
+                max_emails=100,
+            )
+            if not sent_to_sender:
+                all_sent = graph.fetch_recent_sent(max_emails=100)
+        except httpx.TimeoutException:
+            audit.warning(
+                "draft.style_fetch_timeout",
+                email_id=request.email_id,
+                sender_domain=sender_domain,
+            )
+            # Continue with no style context — draft will be less personalized
+            # but the user gets a response instead of an error
 
         # Generate the draft
         result = engine.draft_reply(
@@ -131,7 +142,7 @@ async def generate_draft(
 
 
 @router.post("/summarize/{email_id}")
-async def summarize_email(
+def summarize_email(
     email_id: str,
     response: Response,
     session: SessionData = Depends(require_auth),
