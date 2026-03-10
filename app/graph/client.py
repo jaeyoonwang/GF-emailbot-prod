@@ -206,7 +206,7 @@ class GraphClient:
     # =========================================================================
 
     def fetch_sent_to_recipient(
-        self, recipient_email: str, max_emails: int = 100, max_pages: int = 20
+        self, recipient_email: str, max_emails: int = 100, max_pages: int = 5
     ) -> list[dict]:
         """
         Fetch sent emails to a specific recipient for style context.
@@ -218,7 +218,7 @@ class GraphClient:
             recipient_email: Email address of the recipient.
             max_emails: Maximum matching emails to return.
             max_pages: Maximum pages to scan (caps total emails scanned at
-                       max_pages * 50). Prevents runaway scans on large mailboxes.
+                       max_pages * 50). 5 pages = 250 emails scanned max.
 
         Returns:
             List of dicts with 'subject', 'body', 'body_preview', 'sent_datetime'.
