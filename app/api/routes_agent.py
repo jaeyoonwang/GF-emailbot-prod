@@ -93,10 +93,10 @@ def generate_draft(
         try:
             sent_to_sender = graph.fetch_sent_to_recipient(
                 recipient_email=sender_email,
-                max_emails=100,
+                max_emails=35,
             )
             if not sent_to_sender:
-                all_sent = graph.fetch_recent_sent(max_emails=100)
+                all_sent = graph.fetch_recent_sent(max_emails=35)
         except httpx.TimeoutException:
             audit.warning(
                 "draft.style_fetch_timeout",
